@@ -17,6 +17,12 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../
 
+dependency_overrides:
+  video_player_avfoundation:
+    path: /Users/nd/IdeaProjects/plugins/packages/video_player/video_player_avfoundation
+  video_player_platform_interface:
+    path: /Users/nd/IdeaProjects/plugins/packages/video_player/video_player_platform_interface
+
 dev_dependencies:
   build_runner: ^2.1.10
   flutter_driver:
@@ -33,6 +39,7 @@ flutter:
   assets:
     - assets/flutter-mark-square-64.png
     - assets/Butterfly-209.mp4
+    - assets/Siamskaya-Kisa.png
     - assets/Butterfly-209.webm
     - assets/bumble_bee_captions.srt
     - assets/bumble_bee_captions.vtt

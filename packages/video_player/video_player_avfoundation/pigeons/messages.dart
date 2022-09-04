@@ -57,6 +57,19 @@ class MixWithOthersMessage {
   bool mixWithOthers;
 }
 
+
+class FilterMessage {
+  FilterMessage(this.textureId, this.filterId);
+  int textureId;
+  int filterId;
+}
+
+class PrepareFiltersMessage {
+  PrepareFiltersMessage(this.textureId, this.filters);
+  int textureId;
+  List<Map<String, String>?> filters;
+}
+
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')
 abstract class AVFoundationVideoPlayerApi {
   @ObjCSelector('initialize')
@@ -81,4 +94,8 @@ abstract class AVFoundationVideoPlayerApi {
   void pause(TextureMessage msg);
   @ObjCSelector('setMixWithOthers:')
   void setMixWithOthers(MixWithOthersMessage msg);
+  @ObjCSelector('useFilter:')
+  void useFilter(FilterMessage msg);
+  @ObjCSelector('prepareFilters:')
+  void prepareFilters(PrepareFiltersMessage msg);
 }

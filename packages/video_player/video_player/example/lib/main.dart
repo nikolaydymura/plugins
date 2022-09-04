@@ -6,7 +6,6 @@
 
 /// An example of using the plugin, controlling lifecycle and playback of the
 /// video.
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -150,6 +149,7 @@ class _ButterFlyAssetVideo extends StatefulWidget {
 
 class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
   late VideoPlayerController _controller;
+  int _currentFilter = -1;
 
   @override
   void initState() {
@@ -160,7 +160,17 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
       setState(() {});
     });
     _controller.setLooping(true);
-    _controller.initialize().then((_) => setState(() {}));
+    _controller
+        .initialize()
+        .then((_) => _controller.prepareFilters([
+              <String, String>{'name': 'CIPhotoEffectNoir'},
+              <String, String>{
+                'name': 'CIColorCube',
+                'inputCubeData': 'assets/Siamskaya-Kisa.png',
+                'inputCubeDimension': '64'
+              }
+            ]))
+        .then((_) => setState(() {}));
     _controller.play();
   }
 
@@ -193,6 +203,19 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
               ),
             ),
           ),
+          OutlinedButton(
+              onPressed: _controller.value.isInitialized
+                  ? () {
+                      setState(() {
+                        _currentFilter++;
+                        if (_currentFilter >= 2) {
+                          _currentFilter = -1;
+                        }
+                        _controller.useFilter(_currentFilter);
+                      });
+                    }
+                  : null,
+              child: const Text('Next'))
         ],
       ),
     );

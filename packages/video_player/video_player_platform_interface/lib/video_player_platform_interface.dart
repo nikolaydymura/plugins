@@ -102,6 +102,17 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   Future<void> setMixWithOthers(bool mixWithOthers) {
     throw UnimplementedError('setMixWithOthers() has not been implemented.');
   }
+
+  /// Sets list of filters for the video.
+  Future<void> prepareFilters(int textureId, List<Map<String, String>> filters) {
+    throw UnimplementedError('prepareFilters() has not been implemented.');
+  }
+
+  /// Sets the filtering mode for the video. -1 disables filtering
+  Future<void> useFilter(int textureId, int filterId) {
+    throw UnimplementedError('useFilter() has not been implemented.');
+  }
+
 }
 
 class _PlaceholderImplementation extends VideoPlayerPlatform {}

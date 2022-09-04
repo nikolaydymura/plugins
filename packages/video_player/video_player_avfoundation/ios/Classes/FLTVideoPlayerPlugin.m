@@ -14,6 +14,119 @@
 #error Code Requires ARC.
 #endif
 
+@implementation CIFilter (LUT)
++(CIFilter *) filterWithLUT:(UIImage *) image dimension:(NSInteger) n
+{
+    
+    NSInteger width = CGImageGetWidth(image.CGImage);
+    NSInteger height = CGImageGetHeight(image.CGImage);
+    NSInteger rowNum = height / n;
+    NSInteger columnNum = width / n;
+    
+    if ((width % n != 0) || (height % n != 0) || (rowNum * columnNum != n))
+    {
+        NSLog(@"Invalid colorLUT");
+        return nil;
+    }
+    
+    unsigned char *bitmap = [self createRGBABitmapFromImage:image.CGImage];
+    
+    if (bitmap == NULL)
+    {
+        return nil;
+    }
+    
+    NSInteger size = n * n * n * sizeof(float) * 4;
+    float *data = malloc(size);
+    int bitmapOffest = 0;
+    int z = 0;
+    for (int row = 0; row <  rowNum; row++)
+    {
+        for (int y = 0; y < n; y++)
+        {
+            int tmp = z;
+            for (int col = 0; col < columnNum; col++)
+            {
+                for (int x = 0; x < n; x++) {
+                    float r = (unsigned int)bitmap[bitmapOffest];
+                    float g = (unsigned int)bitmap[bitmapOffest + 1];
+                    float b = (unsigned int)bitmap[bitmapOffest + 2];
+                    float a = (unsigned int)bitmap[bitmapOffest + 3];
+                    
+                    NSInteger dataOffset = (z*n*n + y*n + x) * 4;
+                    
+                    data[dataOffset] = r / 255.0;
+                    data[dataOffset + 1] = g / 255.0;
+                    data[dataOffset + 2] = b / 255.0;
+                    data[dataOffset + 3] = a / 255.0;
+                    
+                    bitmapOffest += 4;
+                }
+                z++;
+            }
+            z = tmp;
+        }
+        z += columnNum;
+    }
+    
+    free(bitmap);
+    
+    CIFilter *filter = [CIFilter filterWithName:@"CIColorCube"];
+    [filter setValue:[NSData dataWithBytesNoCopy:data length:size freeWhenDone:YES] forKey:@"inputCubeData"];
+    [filter setValue:[NSNumber numberWithInteger:n] forKey:@"inputCubeDimension"];
+    
+    return filter;
+}
++ (unsigned char *)createRGBABitmapFromImage:(CGImageRef)image
+{
+    CGContextRef context = NULL;
+    CGColorSpaceRef colorSpace;
+    unsigned char *bitmap;
+    NSInteger bitmapSize;
+    NSInteger bytesPerRow;
+    
+    size_t width = CGImageGetWidth(image);
+    size_t height = CGImageGetHeight(image);
+    
+    bytesPerRow   = (width * 4);
+    bitmapSize     = (bytesPerRow * height);
+    
+    bitmap = malloc( bitmapSize );
+    if (bitmap == NULL)
+    {
+        return NULL;
+    }
+    
+    colorSpace = CGColorSpaceCreateDeviceRGB();
+    if (colorSpace == NULL)
+    {
+        free(bitmap);
+        return NULL;
+    }
+    
+    context = CGBitmapContextCreate (bitmap,
+                                     width,
+                                     height,
+                                     8,
+                                     bytesPerRow,
+                                     colorSpace,
+                                     kCGImageAlphaPremultipliedLast);
+    
+    CGColorSpaceRelease( colorSpace );
+    
+    if (context == NULL)
+    {
+        free (bitmap);
+    }
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+    
+    CGContextRelease(context);
+    
+    return bitmap;
+}
+@end
+
 @interface FLTFrameUpdater : NSObject
 @property(nonatomic) int64_t textureId;
 @property(nonatomic, weak, readonly) NSObject<FlutterTextureRegistry> *registry;
@@ -43,6 +156,8 @@
 @property(nonatomic, readonly) BOOL disposed;
 @property(nonatomic, readonly) BOOL isPlaying;
 @property(nonatomic) BOOL isLooping;
+@property(nonatomic) int filterId;
+@property(nonatomic) NSArray* filters;
 @property(nonatomic, readonly) BOOL isInitialized;
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
@@ -185,8 +300,26 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   if ([headers count] != 0) {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
+  _filterId = -1;
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
+  if (url.isFileURL) {
+    item.videoComposition = [AVVideoComposition videoCompositionWithAsset: urlAsset applyingCIFiltersWithHandler: ^(AVAsynchronousCIImageFilteringRequest * _Nonnull request) {
+        
+        CIImage *sourceImage = [request.sourceImage imageByClampingToExtent];
+        
+        if (self->_filterId >= 0) {
+            CIFilter *filter = self->_filters[self->_filterId];
+            [filter setValue: sourceImage forKey:kCIInputImageKey];
+            
+            CIImage *outputImage = filter.outputImage;
+            
+            [request finishWithImage:outputImage context:nil];
+        } else {
+            [request finishWithImage:sourceImage context:nil];
+        }
+    }];
+  }
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
 }
 
@@ -215,7 +348,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
                 [self getVideoCompositionWithTransform:self->_preferredTransform
                                              withAsset:asset
                                         withVideoTrack:videoTrack];
-            item.videoComposition = videoComposition;
+            //item.videoComposition = videoComposition;
           }
         };
         [videoTrack loadValuesAsynchronouslyForKeys:@[ @"preferredTransform" ]
@@ -588,6 +721,37 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 - (void)setLooping:(FLTLoopingMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   player.isLooping = input.isLooping.boolValue;
+}
+
+- (void)useFilter:(FLTFilterMessage *)input error:(FlutterError **)error {
+  FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
+  player.filterId = input.filterId.intValue;
+}
+
+- (void)prepareFilters:(FLTPrepareFiltersMessage *)input error:(FlutterError **)error {
+    FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
+    NSMutableArray *filters = [NSMutableArray array];
+    for (id filterMetadata in input.filters) {
+        NSString *filterName = [filterMetadata objectForKey:@"name"];
+        
+        CIFilter *filter = nil;
+        
+        if ([filterName  isEqual: @"CIColorCube"]) {
+            NSString* assetPath = [_registrar lookupKeyForAsset: [filterMetadata objectForKey: @"inputCubeData"]];
+            NSString* path = [[NSBundle mainBundle] pathForResource:assetPath ofType:nil];
+            UIImage* img = [UIImage imageWithContentsOfFile:path];
+            
+            NSString *inputCubeDimension = [filterMetadata objectForKey: @"inputCubeDimension"];
+            const size_t dimension = [inputCubeDimension intValue];
+            
+            filter = [CIFilter filterWithLUT:img dimension:dimension];
+        } else {
+            filter = [CIFilter filterWithName: filterName];
+        }
+
+        [filters addObject: filter];
+    }
+    player.filters = filters;
 }
 
 - (void)setVolume:(FLTVolumeMessage *)input error:(FlutterError **)error {
