@@ -151,6 +151,35 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
   late VideoPlayerController _controller;
   int _currentFilter = -1;
 
+  final filters = <Map<String, String>>[
+    <String, String>{'name': 'CIPhotoEffectNoir'},
+    <String, String>{
+      'name': 'CIColorCube',
+      'inputCubeData': 'assets/Siamskaya-Kisa.png',
+      'inputCubeDimension': '64'
+    },
+    <String, String>{
+      'name': 'CIColorCube',
+      'inputCubeData': 'assets/filter_lut_1.png',
+      'inputCubeDimension': '64'
+    },
+    <String, String>{
+      'name': 'CIColorCube',
+      'inputCubeData': 'assets/filter_lut_2.png',
+      'inputCubeDimension': '64'
+    },
+    <String, String>{
+      'name': 'CIColorCube',
+      'inputCubeData': 'assets/filter_lut_3.png',
+      'inputCubeDimension': '64'
+    },
+    <String, String>{
+      'name': 'CIColorCube',
+      'inputCubeData': 'assets/filter_lut_4.png',
+      'inputCubeDimension': '64'
+    }
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -162,14 +191,9 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
     _controller.setLooping(true);
     _controller
         .initialize()
-        .then((_) => _controller.prepareFilters([
-              <String, String>{'name': 'CIPhotoEffectNoir'},
-              <String, String>{
-                'name': 'CIColorCube',
-                'inputCubeData': 'assets/Siamskaya-Kisa.png',
-                'inputCubeDimension': '64'
-              }
-            ]))
+        .then((_) {
+          return _controller.prepareFilters(filters);
+        })
         .then((_) => setState(() {}));
     _controller.play();
   }
@@ -208,7 +232,7 @@ class _ButterFlyAssetVideoState extends State<_ButterFlyAssetVideo> {
                   ? () {
                       setState(() {
                         _currentFilter++;
-                        if (_currentFilter >= 2) {
+                        if (_currentFilter >= filters.length) {
                           _currentFilter = -1;
                         }
                         _controller.useFilter(_currentFilter);

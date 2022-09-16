@@ -40,6 +40,10 @@ flutter:
     - assets/flutter-mark-square-64.png
     - assets/Butterfly-209.mp4
     - assets/Siamskaya-Kisa.png
+    - assets/filter_lut_1.png
+    - assets/filter_lut_2.png
+    - assets/filter_lut_3.png
+    - assets/filter_lut_4.png
     - assets/Butterfly-209.webm
     - assets/bumble_bee_captions.srt
     - assets/bumble_bee_captions.vtt
