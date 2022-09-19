@@ -56,6 +56,18 @@ class MixWithOthersMessage {
   bool mixWithOthers;
 }
 
+class FilterMessage {
+  FilterMessage(this.textureId, this.filterId);
+  int textureId;
+  int filterId;
+}
+
+class PrepareFiltersMessage {
+  PrepareFiltersMessage(this.textureId, this.filters);
+  int textureId;
+  List<Map<String, String>?> filters;
+}
+
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')
 abstract class AndroidVideoPlayerApi {
   void initialize();
@@ -69,4 +81,6 @@ abstract class AndroidVideoPlayerApi {
   void seekTo(PositionMessage msg);
   void pause(TextureMessage msg);
   void setMixWithOthers(MixWithOthersMessage msg);
+  void useFilter(FilterMessage msg);
+  void prepareFilters(PrepareFiltersMessage msg);
 }

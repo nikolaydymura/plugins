@@ -21,7 +21,7 @@ dependencies:
   flutter:
     sdk: flutter
   video_player_platform_interface:
-    path: /Users/nd/IdeaProjects/plugins/packages/video_player/video_player_platform_interface
+    path: ../video_player_platform_interface
 
 dev_dependencies:
   flutter_test:

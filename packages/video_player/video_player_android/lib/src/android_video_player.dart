@@ -164,6 +164,22 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
         .setMixWithOthers(MixWithOthersMessage(mixWithOthers: mixWithOthers));
   }
 
+  @override
+  Future<void> prepareFilters(int textureId, List<Map<String, String>> filters) {
+    return _api.prepareFilters(PrepareFiltersMessage(
+      textureId: textureId,
+      filters: filters,
+    ));
+  }
+
+  @override
+  Future<void> useFilter(int textureId, int filterId) {
+    return _api.useFilter(FilterMessage(
+      textureId: textureId,
+      filterId: filterId,
+    ));
+  }
+
   EventChannel _eventChannelFor(int textureId) {
     return EventChannel('flutter.io/videoPlayer/videoEvents$textureId');
   }
