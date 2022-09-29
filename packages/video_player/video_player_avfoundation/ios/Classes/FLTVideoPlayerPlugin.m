@@ -737,8 +737,12 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
         CIFilter *filter = nil;
         
         if ([filterName  isEqual: @"CIColorCube"]) {
-            NSString* assetPath = [_registrar lookupKeyForAsset: [filterMetadata objectForKey: @"inputCubeData"]];
+            NSString * cubePath = [filterMetadata objectForKey: @"inputCubeData"];
+            NSString* assetPath = [_registrar lookupKeyForAsset: cubePath];
             NSString* path = [[NSBundle mainBundle] pathForResource:assetPath ofType:nil];
+            if (path == nil) {
+                path = cubePath;
+            }
             UIImage* img = [UIImage imageWithContentsOfFile:path];
             
             NSString *inputCubeDimension = [filterMetadata objectForKey: @"inputCubeDimension"];
