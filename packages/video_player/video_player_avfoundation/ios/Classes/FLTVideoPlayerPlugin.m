@@ -157,7 +157,7 @@
 @property(nonatomic, readonly) BOOL isPlaying;
 @property(nonatomic) BOOL isLooping;
 @property(nonatomic) int filterId;
-@property(nonatomic) NSArray* filters;
+@property(nonatomic) NSMutableArray* filters;
 @property(nonatomic, readonly) BOOL isInitialized;
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
@@ -755,7 +755,17 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
 
         [filters addObject: filter];
     }
-    player.filters = filters;
+    if (input.append) {
+        if (player.filters) {
+            for (id filter in filters) {
+                [player.filters addObject: filter];
+            }
+        } else {
+            player.filters = filters;
+        }
+    } else {
+        player.filters = filters;
+    }
 }
 
 - (void)setVolume:(FLTVolumeMessage *)input error:(FlutterError **)error {

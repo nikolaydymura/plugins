@@ -219,15 +219,18 @@ class PrepareFiltersMessage {
   PrepareFiltersMessage({
     required this.textureId,
     required this.filters,
+    required this.append,
   });
 
   int textureId;
   List<Map<String?, String?>?> filters;
+  bool append;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
     pigeonMap['textureId'] = textureId;
     pigeonMap['filters'] = filters;
+    pigeonMap['append'] = append;
     return pigeonMap;
   }
 
@@ -236,6 +239,7 @@ class PrepareFiltersMessage {
     return PrepareFiltersMessage(
       textureId: pigeonMap['textureId']! as int,
       filters: (pigeonMap['filters'] as List<Object?>?)!.cast<Map<String?, String?>?>(),
+      append: pigeonMap['append']! as bool,
     );
   }
 }

@@ -241,10 +241,12 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 
 @implementation FLTPrepareFiltersMessage
 + (instancetype)makeWithTextureId:(NSNumber *)textureId
-    filters:(NSArray<NSDictionary<NSString *, NSString *> *> *)filters {
+    filters:(NSArray<NSDictionary<NSString *, NSString *> *> *)filters
+    append:(NSNumber *)append {
   FLTPrepareFiltersMessage* pigeonResult = [[FLTPrepareFiltersMessage alloc] init];
   pigeonResult.textureId = textureId;
   pigeonResult.filters = filters;
+  pigeonResult.append = append;
   return pigeonResult;
 }
 + (FLTPrepareFiltersMessage *)fromMap:(NSDictionary *)dict {
@@ -253,10 +255,12 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
   NSAssert(pigeonResult.textureId != nil, @"");
   pigeonResult.filters = GetNullableObject(dict, @"filters");
   NSAssert(pigeonResult.filters != nil, @"");
+  pigeonResult.append = GetNullableObject(dict, @"append");
+  NSAssert(pigeonResult.append != nil, @"");
   return pigeonResult;
 }
 - (NSDictionary *)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId", (self.filters ? self.filters : [NSNull null]), @"filters", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.textureId ? self.textureId : [NSNull null]), @"textureId", (self.filters ? self.filters : [NSNull null]), @"filters", (self.append ? self.append : [NSNull null]), @"append", nil];
 }
 @end
 

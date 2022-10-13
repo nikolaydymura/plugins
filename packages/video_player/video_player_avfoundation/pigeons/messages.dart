@@ -65,9 +65,10 @@ class FilterMessage {
 }
 
 class PrepareFiltersMessage {
-  PrepareFiltersMessage(this.textureId, this.filters);
+  PrepareFiltersMessage(this.textureId, this.filters, this.append);
   int textureId;
   List<Map<String, String>?> filters;
+  bool append;
 }
 
 @HostApi(dartHostTestHandler: 'TestHostVideoPlayerApi')

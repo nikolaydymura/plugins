@@ -104,7 +104,7 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   }
 
   /// Sets list of filters for the video.
-  Future<void> prepareFilters(int textureId, List<Map<String, String>> filters) {
+  Future<void> prepareFilters(int textureId, List<Map<String, String>> filters, bool append) {
     throw UnimplementedError('prepareFilters() has not been implemented.');
   }
 

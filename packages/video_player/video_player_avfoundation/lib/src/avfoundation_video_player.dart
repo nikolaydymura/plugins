@@ -164,10 +164,12 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> prepareFilters(int textureId, List<Map<String, String>> filters) {
+  Future<void> prepareFilters(
+      int textureId, List<Map<String, String>> filters, bool append) {
     return _api.prepareFilters(PrepareFiltersMessage(
       textureId: textureId,
       filters: filters,
+      append: append,
     ));
   }
 
